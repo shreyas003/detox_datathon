@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            background-color: #f3e5f5; /* Pink background */
+            font-family: Arial, sans-serif;
+            color: #ffffff; /* White text */
+        }
+        h1 {
+            color: #4a148c; /* Purple heading */
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            border: 2px solid #4a148c; /* Purple border */
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #4a148c; /* Purple border */
+        }
+        tr:nth-child(even) {
+            background-color: #4a148c; /* Purple row */
+        }
+        tr:nth-child(odd) {
+            background-color: #880e4f; /* Darker purple row */
+        }
+        th {
+            background-color: #9c27b0; /* Lighter purple heading */
+        }
+    </style>
+</head>
+<body>
+    <h1>User Dashboard</h1>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Points</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.points }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

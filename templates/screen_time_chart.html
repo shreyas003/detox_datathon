@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Time Analysis</title>
+    <style>
+        .chart-container {
+            width: 80%;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-family: Arial, sans-serif;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <h1>Daily Screen Time Analysis</h1>
+        <div class="chart-wrapper">
+            <canvas id="screenTimeChart"></canvas>
+        </div>
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">Average Screen Time</div>
+                <div class="stat-value" id="avgScreenTime">0 min</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Peak Usage Hour</div>
+                <div class="stat-value" id="peakHour">--:00</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total Daily Time</div>
+                <div class="stat-value" id="totalTime">0 min</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global chart variable
+        let screenTimeChart = null;
+
+        function updateStats(screenTimes, hours) {
+            const avgTime = Math.round(screenTimes.reduce((a, b) => a + b, 0) / screenTimes.length);
+            const totalTime = screenTimes.reduce((a, b) => a + b, 0);
+            const peakHour = hours[screenTimes.indexOf(Math.max(...screenTimes))];
+
+            document.getElementById('avgScreenTime').textContent = `${avgTime} min`;
+            document.getElementById('totalTime').textContent = `${totalTime} min`;
+            document.getElementById('peakHour').textContent = peakHour;
+        }
+
+        function createChart(hours, screenTimes) {
+            const ctx = document.getElementById('screenTimeChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (screenTimeChart) {
+                screenTimeChart.destroy();
+            }
+
+            screenTimeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Screen Time (minutes)',
+                        data: screenTimes,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Hourly Screen Time Distribution'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Minutes'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hour of Day'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function fetchAndUpdateData() {
+            fetch('/screen_time')
+                .then(response => response.json())
+                .then(data => {
+                    const hours = data.map(entry => `${entry.hour}:00`);
+                    const screenTimes = data.map(entry => entry.minutes);
+                    
+                    updateStats(screenTimes, hours);
+                    createChart(hours, screenTimes);
+                })
+                .catch(error => {
+                    console.error('Error fetching screen time data:', error);
+                });
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', fetchAndUpdateData);
+
+        // Optional: Update every 5 minutes
+        // setInterval(fetchAndUpdateData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

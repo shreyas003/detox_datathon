@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points</title>
+    <style>
+        /* CSS code */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3e5f5; /* Pink */
+        }
+
+        .container {
+            background-color: #ce93d8; /* Purple */
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.75);
+            text-align: center;
+            width: 400px;
+        }
+
+        h1 {
+            color: #ffffff; /* White */
+            margin-bottom: 20px;
+        }
+
+        #points {
+            color: #ffffff; /* White */
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .points-text {
+            color: #ffffff; /* White */
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Current Points</h1>
+        <p id="points" class="points-text">0</p>
+        <button onclick="unlock()">Unlock</button>
+    </div>
+    
+    <script>
+        // Function to fetch points from the server and update the display
+        function fetchPointsAndUpdate() {
+            // Make an AJAX request to fetch points from the server
+            fetch('/fetch_points')
+            .then(response => response.json())
+            .then(data => {
+                // Update the points display with the fetched points
+                document.getElementById('points').innerText = data.points;
+            })
+            .catch(error => {
+                console.error('Error fetching points:', error);
+            });
+        }
+
+        // Call fetchPointsAndUpdate initially to load points
+        fetchPointsAndUpdate();
+        function unlock() {
+            window.location.href = "/unlock";
+        }
+    </script>
+</body>
+</html>

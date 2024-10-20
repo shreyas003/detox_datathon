@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vouchers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+        h5 {
+            color: #333;
+        }
+
+        .voucher {
+            display: inline-block;
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .voucher img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .voucher-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .voucher-description {
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vouchers</h1>
+        
+        <!-- Display images based on points -->
+        {% if points > 30 %}
+        <div class="voucher">
+            <h2 class="voucher-title">Voucher 1</h2>
+            <h5 class="voucher-title">Congragulations! you got voucher</h5>
+            <img src="https://cdn.grabon.in/gograbon/images/web-images/uploads/1662989260664/lifestyle-coupons.jpg" alt="Voucher 1">
+            <p class="voucher-description">use code jfnj324r34n34j3rn to reedem at lifestyle store </p>
+        </div>
+        {% endif %}
+        {% if points > 1000 %}
+        <div class="voucher">
+            <h2 class="voucher-title">Voucher 2</h2>
+            <h5 class="voucher-title">Congragulations! you got voucher</h5>
+            <img src="https://assets.thehansindia.com/h-upload/2023/08/04/1370022-idp-education.webp" alt="Voucher 2">
+            <p class="voucher-description">use code iahfuirj1138429fhkajf to reedem at wonderla</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

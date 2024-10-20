@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenZone</title>
+    <style>
+        /* Your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+            background-image: url('https://wallpapers.com/images/hd/bright-blurred-pink-l0iph4k57w0g0f0j.jpg');
+        }
+
+        #chat {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: lightcyan;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 34px;
+            margin-bottom: 20px;
+            text-align: center;
+            color:palevioletred;
+            font-style: italic;
+        }
+
+        h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            text-align: center;
+            color:plum;
+        }
+
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #messages li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        #messages li:last-child {
+            margin-bottom: 0;
+        }
+
+        #message_form {
+            margin-top: 20px;
+        }
+
+        #input_message {
+            width: calc(100% - 70px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        #message_form button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #leave-chat-btn {
+            margin-top: 20px;
+            padding: 8px 15px;
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Styles for similar users section */
+        #similar-users {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #similar-users h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        #similar-users-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #similar-users-list li {
+            margin-bottom: 5px;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        {% if user %}
+        <h1>{{ user[0][0] }} Chatroom</h1>
+        <h3>Share your progress</h3>
+        {% else %}
+        <h1>Welcome</h1>
+        {% endif %}
+        <ul id="messages"></ul>
+        <form id="message_form">
+            <input id="input_message" autocomplete="off" /><button>Send</button>
+        </form>
+        <button id="leave-chat-btn" onclick="window.location.href='/';">Leave Chat</button>
+    </div>
+    <button id="find-buddy-btn">Find Buddy</button>
+
+    
+    <div id="similar-users">
+        <h2>Similar Users</h2>
+        <ul id="similar-users-list"></ul>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Socket.IO event to load previous messages
+        socket.on('load_messages', function (messages) {
+            var ul = document.getElementById("messages");
+            ul.innerHTML = '';
+            messages.forEach(function (msg) {
+                var li = document.createElement("li");
+                li.appendChild(document.createTextNode(msg.user + ": " + msg.message));
+                ul.appendChild(li);
+            });
+        });
+
+        // Socket.IO event to receive new message
+        socket.on('receive_message', function (data) {
+            var ul = document.getElementById("messages");
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(data.user + ": " + data.message));
+            ul.appendChild(li);
+        });
+
+        // Socket.IO event to receive similar users
+        socket.on('similar_users', function (similarUsers) {
+            var ul = document.getElementById("similar-users-list");
+            ul.innerHTML = '';
+            similarUsers.forEach(function (user) {
+                var li = document.createElement("li");
+                li.appendChild(document.createTextNode(user));
+                ul.appendChild(li);
+            });
+        });
+
+        // Button click event to find buddies
+        document.getElementById('find-buddy-btn').onclick = function() {
+            fetch('/findbuddy')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(similarUsers => {
+                    console.log("Similar users:", similarUsers);
+                    // Handle similar users as needed
+                })
+                .catch(error => {
+                    console.error('Error fetching similar users:', error);
+                });
+        };
+
+        // Handle form submission
+        document.getElementById('message_form').onsubmit = function (e) {
+            e.preventDefault();
+            var messageInput = document.getElementById('input_message');
+            var message = messageInput.value;
+            if (message) {
+                socket.emit('send_message', { message: message });
+                messageInput.value = '';
+            }
+        };
+    </script>
+</body>
+</html>

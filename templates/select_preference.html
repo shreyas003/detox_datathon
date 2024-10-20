@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Preference</title>
+    <style>
+        body {
+            background-color: pink;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            background-color: purple;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+        }
+
+        label, select, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: white;
+            color: purple;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <form method="POST" action="/select_preference">
+        <h1>Select Your Preference</h1>
+        <label for="preference">Choose Preference:</label>
+        <select id="preference" name="preference">
+            <option value="park">Park</option>
+            <option value="gym">Gym</option>
+            <option value="yoga_studio">Yoga Studio</option>
+            <option value="art_gallery">Art Gallery</option>
+            <option value="museum">Museum</option>
+            <option value="college">College</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

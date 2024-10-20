@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Time Area Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Screen Time (0-24 Hours)</h2>
+    <canvas id="screenTimeAreaChart"></canvas>
+
+    <script>
+        fetch('/screen_time')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('screenTimeAreaChart').getContext('2d');
+
+                const hours = data.map(entry => entry.hour);
+                const minutes = data.map(entry => entry.minutes);
+
+                const areaChart = new Chart(ctx, {
+                    type: 'line',  // Using a line chart for an area effect
+                    data: {
+                        labels: hours,
+                        datasets: [{
+                            label: 'Screen Time (minutes)',
+                            data: minutes,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',  // For the filled area
+                            fill: true,  // Makes it an area chart
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (Hours)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Minutes Spent'
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+</body>
+</html>

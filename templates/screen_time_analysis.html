@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Time Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .severity-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .severity-Low { background-color: #10B981; color: white; }
+        .severity-Moderate { background-color: #F59E0B; color: white; }
+        .severity-High { background-color: #EF4444; color: white; }
+        .severity-Critical { background-color: #7F1D1D; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8" id="summary">
+            <!-- Summary cards will be populated here -->
+        </div>
+        
+        <!-- Data Table -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-4">3-Hour Screen Time Analysis</h2>
+            <div id="data-table" class="overflow-x-auto">
+                <!-- Table will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScreenTimeData();
+        });
+
+        function loadScreenTimeData() {
+            fetch('/get_screen_time_predictions')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateSummary(data.summary);
+                        updateDataTable(data.results);
+                    } else {
+                        showError(data.error);
+                    }
+                })
+                .catch(error => showError(error));
+        }
+
+        function updateSummary(summary) {
+            const summaryCards = [
+                { value: summary.total_time, label: 'Total Minutes' },
+                { value: summary.critical_count, label: 'Critical Periods' },
+                { value: summary.high_count, label: 'High Usage' },
+                { value: summary.moderate_count, label: 'Moderate Usage' },
+                { value: summary.low_count, label: 'Low Usage' }
+            ];
+
+            document.getElementById('summary').innerHTML = summaryCards.map(card => `
+                <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                    <h3 class="text-3xl font-bold text-blue-600">${card.value}</h3>
+                    <p class="text-gray-600">${card.label}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateDataTable(results) {
+            const table = `
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Frame</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Minutes Used</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        ${results.map(row => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">${row.time_frame}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${row.site}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">${row.minutes_used}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="severity-badge severity-${row.severity}">${row.severity}</span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('data-table').innerHTML = table;
+        }
+
+        function showError(message) {
+            document.getElementById('data-table').innerHTML = `<p class="text-red-500">${message}</p>`;
+        }
+    </script>
+</body>
+</html>

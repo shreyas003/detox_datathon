@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen Time Tracker</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom right, #ffd6d6, #b39ddb);
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+input[type="number"], button {
+  padding: 10px;
+  margin: 10px;
+}
+
+#timer {
+  font-size: 24px;
+  margin-top: 20px;
+}
+
+.clock {
+  font-size: 36px;
+  margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Screen Time Tracker</h1>
+  <input type="number" id="aimTime" placeholder="Set aim time (in minutes)">
+  <button onclick="startTimer()">Start Timer</button>
+  <button onclick="resetTimer()">Reset</button>
+  <div id="timer"></div>
+  <div id="message"></div>
+  <div class="clock" id="clock"></div>
+</div>
+<script>
+var timerStarted = false;
+var aimAchieved = false;
+var x;
+
+function startTimer() {
+  if (timerStarted) {
+    return; // Timer already started, prevent multiple instances
+  }
+  
+  timerStarted = true;
+  
+  var aimTime = document.getElementById("aimTime").value;
+  var currentTime = new Date().getTime();
+  var aimMilliseconds = aimTime * 60000; // Convert minutes to milliseconds
+
+  var countDownDate = currentTime + aimMilliseconds;
+
+  x = setInterval(function() {
+    var now = new Date().getTime();
+    var distance = countDownDate - now;
+
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById("timer").innerHTML = minutes + "m " + seconds + "s ";
+
+    if (distance < 0) {
+      clearInterval(x);
+      document.getElementById("timer").innerHTML = "Congrats! You achieved your aim!";
+      aimAchieved = true;
+    }
+  }, 1000);
+}
+
+function resetTimer() {
+  clearInterval(x); // Stop the timer
+  timerStarted = false;
+  aimAchieved = false;
+  document.getElementById("timer").innerHTML = "";
+  document.getElementById("message").innerHTML = "";
+}
+
+window.onfocus = function() {
+  if (timerStarted && !aimAchieved) {
+    clearInterval(x); // Stop the timer
+    document.getElementById("message").innerHTML = "Oops! You visited the page before the set aim time.";
+  }
+};
+
+// Display Clock
+function updateTime() {
+  var now = new Date();
+  var hours = now.getHours();
+  var minutes = now.getMinutes();
+  var seconds = now.getSeconds();
+  var timeString = hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+  document.getElementById("clock").textContent = timeString;
+}
+setInterval(updateTime, 1000);
+</script>
+</body>
+</html>

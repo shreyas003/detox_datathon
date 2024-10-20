@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Places for {{ preference }}</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <style>
+        /* CSS code */
+        #map-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #map {
+            width: 50%;
+            height: 100%;
+        }
+
+        #places-list {
+            width: 50%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .place-item {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .place-name {
+            font-weight: bold;
+        }
+
+        .visit-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nearby Places for {{ preference }}</h1>
+    <div id="map-container">
+        <div id="map"></div>
+        <div id="places-list"></div>
+    </div>
+    <script>
+        let map;
+        let selectedPreference = null;
+
+        function initMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(success, error);
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function success(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            // Center the map to the user's location
+            const userLocation = { lat: latitude, lng: longitude };
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: userLocation,
+                zoom: 15, // Adjust the zoom level as needed
+            });
+
+            // Retrieve the selected preference from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            selectedPreference = urlParams.get('preference');
+
+            // Search for software tech-free zones near the user's location
+            searchTechFreeZones(userLocation);
+        }
+
+        function error() {
+            console.error("Unable to retrieve your location.");
+        }
+
+        function searchTechFreeZones(location) {
+            const request = {
+                location: location,
+                radius: 5000, // Search radius in meters
+                types: [selectedPreference] // Filter by the selected preference
+            };
+
+            // Perform a nearby search using Places API
+            const placesService = new google.maps.places.PlacesService(map);
+            placesService.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    // Display search results on the map
+                    results.forEach(place => {
+                        new google.maps.Marker({
+                            position: place.geometry.location,
+                            map: map,
+                            title: place.name
+                        });
+
+                        // Add place information to the list
+                        const placesList = document.getElementById("places-list");
+                        const placeItem = document.createElement("div");
+                        placeItem.classList.add("place-item");
+                        placeItem.innerHTML = `
+                            <p class="place-name">${place.name}</p>
+                            <button class="visit-button" onclick="visitPlace('${place.name}')">Visit</button>
+                        `;
+                        placesList.appendChild(placeItem);
+                    });
+                }
+            });
+        }
+
+        function loadScript(url, callback) {
+            const script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = url;
+            script.onload = callback;
+            document.head.appendChild(script);
+        }
+
+        function loadGoogleMaps() {
+            loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyD8zMwp5h4uH1d2CPGUvPe-t6ZosNvl1nI&libraries=places,geometry", initMap);
+        }
+
+        function visitPlace(placeName) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                const request = {
+                    query: placeName,
+                    fields: ['geometry']
+                };
+
+                const placesService = new google.maps.places.PlacesService(map);
+                placesService.findPlaceFromQuery(request, function(results, status) {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        const selectedPlaceLocation = results[0].geometry.location;
+                        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                            new google.maps.LatLng(userLocation.lat, userLocation.lng),
+                            selectedPlaceLocation
+                        );
+                        const threshold = 500;
+                        if (distance <= threshold) {
+                            fetch('/visit_place', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({}),
+                            })
+                            .then(response => response.text())
+                            .then(data => {
+                                alert(data);
+                                fetchPointsAndUpdate();
+                            })
+                            .catch(error => {
+                                console.error('Error visiting place:', error);
+                            });
+                        } else {
+                            alert("Sorry, you gained 0 points.");
+                        }
+                    } else {
+                        console.error("Error finding place:", status);
+                    }
+                });
+            }, function(error) {
+                console.error("Error getting current location:", error);
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    function fetchPointsAndUpdate() {
+        fetch('/fetch_points')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('points').innerText = data.points;
+        })
+        .catch(error => {
+            console.error('Error fetching points:', error);
+        });
+    }
+
+    fetchPointsAndUpdate();
+
+        window.onload = loadGoogleMaps;
+    </script>
+</body>
+</html>
